@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/labstack/echo/v4"
-	"github.com/ulfaric/veilnet"
+	"github.com/VeilNet-PTY-LTD/veilnet"
 	"golang.zx2c4.com/wireguard/tun"
 )
 

@@ -1,10 +1,10 @@
-module github.com/ulfaric/veilnet-portal
+module github.com/VeilNet-PTY-LTD/veilnet-portal
 
 go 1.24.4
 
 require (
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/ulfaric/veilnet v0.0.0
+	github.com/VeilNet-PTY-LTD/veilnet v0.0.0
 	golang.zx2c4.com/wireguard v0.0.0-20250521234502-f333402bd9cb
 )
 
@@ -66,4 +66,4 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 )
 
-replace github.com/ulfaric/veilnet => ../veilnet
+replace github.com/VeilNet-PTY-LTD/veilnet => ../veilnet

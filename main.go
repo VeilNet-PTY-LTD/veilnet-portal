@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/ulfaric/veilnet"
-	"github.com/ulfaric/veilnet-portal/portal"
+	"github.com/VeilNet-PTY-LTD/veilnet"
+	"github.com/VeilNet-PTY-LTD/veilnet-portal/portal"
 )
 
 func main() {
@@ -46,14 +46,6 @@ func main() {
 	domainName := viper.GetString("domain_name")
 	region := viper.GetString("region")
 	public := viper.GetBool("public")
-
-	// Debug logging
-	veilnet.Logger.Sugar().Infof("GuardianURL: %s", guardianURL)
-	veilnet.Logger.Sugar().Infof("AnchorToken: %s", anchorToken)
-	veilnet.Logger.Sugar().Infof("AnchorName: %s", anchorName)
-	veilnet.Logger.Sugar().Infof("DomainName: %s", domainName)
-	veilnet.Logger.Sugar().Infof("Region: %s", region)
-	veilnet.Logger.Sugar().Infof("Public: %t", public)
 
 	// Create a new portal
 	p := portal.NewPortal()
