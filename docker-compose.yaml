@@ -1,0 +1,12 @@
+services:
+  veilnet:
+    build: .
+    container_name: veilnet-portal
+    image: veilnet/portal:latest
+    pull_policy: always
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
