@@ -9,18 +9,19 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/labstack/echo/v4"
 	"github.com/VeilNet-PTY-LTD/veilnet"
+	"github.com/labstack/echo/v4"
 	"golang.zx2c4.com/wireguard/tun"
 )
 
 type Portal struct {
-	anchor  *veilnet.Anchor
-	device  tun.Device
-	gateway string
-	iface   string
-	e       *echo.Echo
-	once    sync.Once
+	anchor           *veilnet.Anchor
+	device           tun.Device
+	gateway          string
+	iface            string
+	ipForwardEnabled bool
+	e                *echo.Echo
+	once             sync.Once
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -95,7 +96,9 @@ func (p *Portal) Start(apiBaseURL, anchorToken, anchorName, domainName, region, 
 	p.e.Renderer = &TemplateRenderer{
 		templates: template.Must(template.ParseFS(templateFS, "template.html")),
 	}
+	// Status page
 	p.e.GET("/", p.statusPage)
+	// Prometheus metrics for scrapers
 	p.e.GET("/metrics", echo.WrapHandler(p.anchor.Metrics.GetHandler()))
 
 	go func() {
@@ -229,7 +232,8 @@ func getDefaultGateway() (gateway string, iface string, err error) {
 	return gateway, iface, nil
 }
 
-// setBypassRoutes adds routes to stun.cloudflare.com and turn.cloudflare.com via the specified gateway
+// setBypassRoutes adds routes to stun.cloudflare.com, turn.cloudflare.com and guardian.veilnet.org via the specified gateway
+// These routes are used to prevent deadlocks that webRTC link tries to bind on TUN interface. There routes are not persistent and will disappear after reboot.
 func (p *Portal) setBypassRoutes() {
 	hosts := []string{"stun.cloudflare.com", "turn.cloudflare.com", "guardian.veilnet.org"}
 
@@ -253,6 +257,9 @@ func (p *Portal) setBypassRoutes() {
 	}
 }
 
+// configTUN configures the TUN interface with the given IP address and netmask
+// It also sets up iptables FORWARD rules and NAT for the TUN interface
+// It also enables IP forwarding if it is not already enabled
 func (p *Portal) configTUN(ip, netmask string) error {
 
 	// Flush existing IPs first
@@ -299,17 +306,34 @@ func (p *Portal) configTUN(ip, netmask string) error {
 	}
 	veilnet.Logger.Sugar().Infof("VeilNet TUN interface set to up")
 
-	// Enable IP forwarding
-	cmd = exec.Command("sysctl", "-w", "net.ipv4.ip_forward=1")
-	if err := cmd.Run(); err != nil {
-		veilnet.Logger.Sugar().Errorf("failed to enable IP forwarding: %v", err)
+	// Check if IP forwarding is already enabled
+	cmd = exec.Command("sysctl", "-n", "net.ipv4.ip_forward")
+	output, err := cmd.Output()
+	if err != nil {
+		veilnet.Logger.Sugar().Errorf("failed to check IP forwarding status: %v", err)
 		return err
 	}
-	veilnet.Logger.Sugar().Infof("IP forwarding enabled")
+
+	// Trim whitespace and check if it's enabled
+	p.ipForwardEnabled = strings.TrimSpace(string(output)) == "1"
+
+	if !p.ipForwardEnabled {
+		// Enable IP forwarding
+		cmd = exec.Command("sysctl", "-w", "net.ipv4.ip_forward=1")
+		if err := cmd.Run(); err != nil {
+			veilnet.Logger.Sugar().Errorf("failed to enable IP forwarding: %v", err)
+			return err
+		}
+		veilnet.Logger.Sugar().Infof("IP forwarding enabled")
+	} else {
+		veilnet.Logger.Sugar().Infof("IP forwarding already enabled")
+	}
 
 	return nil
 }
 
+// cleanUp removes the iptables FORWARD rules and NAT rule for the TUN interface
+// It also disables IP forwarding if it was not enabled
 func (p *Portal) cleanUp() {
 
 	// Remove iptables FORWARD rules
@@ -328,9 +352,11 @@ func (p *Portal) cleanUp() {
 		veilnet.Logger.Sugar().Warnf("failed to remove NAT rule: %v", err)
 	}
 
-	// Disable IP forwarding
-	cmd = exec.Command("sysctl", "-w", "net.ipv4.ip_forward=0")
-	if err := cmd.Run(); err != nil {
-		veilnet.Logger.Sugar().Warnf("failed to disable IP forwarding: %v", err)
+	// Disable IP forwarding if it was not enabled
+	if !p.ipForwardEnabled {
+		cmd = exec.Command("sysctl", "-w", "net.ipv4.ip_forward=0")
+		if err := cmd.Run(); err != nil {
+			veilnet.Logger.Sugar().Warnf("failed to disable IP forwarding: %v", err)
+		}
 	}
 }
