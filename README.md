@@ -62,7 +62,7 @@ VEILNET_ANCHOR_TOKEN=your-portal-token-here
 VEILNET_ANCHOR_NAME=your-anchor-name
 VEILNET_DOMAIN_NAME=your-domain.com
 VEILNET_REGION=us
-PUBLIC=true
+VEILNET_PUBLIC=true
 ```
 
 3. **Build and run**:
@@ -81,7 +81,7 @@ docker run -d \
   -e VEILNET_ANCHOR_NAME=your-anchor-name \
   -e VEILNET_DOMAIN_NAME=your-domain.com \
   -e VEILNET_REGION=us \
-  -e PUBLIC=true \
+  -e VEILNET_PUBLIC=true \
   -p 3000:3000 \
   veilnet/portal:latest
 ```
@@ -145,7 +145,7 @@ sduo ./veilnet-portal-arm64
 | `VEILNET_ANCHOR_NAME` | Your anchor name from Guardian | Yes | - |
 | `VEILNET_DOMAIN_NAME` | Your domain name | Yes | - |
 | `VEILNET_REGION` | Your portal region | Yes | - |
-| `PUBLIC` | Whether to register as public portal | No | `true` |
+| `VEILNET_PUBLIC` | Whether to register as public portal | No | `true` |
 
 ### Configuration File
 
@@ -166,7 +166,7 @@ Configuration values are loaded in this order (later overrides earlier):
 
 1. **Default values** (hardcoded defaults)
 2. **Config file values** (`config.yaml`)
-3. **Environment variables** (with `VEILNET_` prefix, except `PUBLIC`)
+3. **Environment variables** (with `VEILNET_` prefix)
 
 ## Web Interface
 
@@ -308,3 +308,9 @@ This project is licensed under the CC-BY-NC-ND-4.0 License.
 
 ### v1.0.0
 - Initial release
+
+### v1.0.1
+- Fixed IP forwarding operation may accidentally overwrites host original settings when directly using binary
+
+### v1.0.2
+- Upgrade to Anchor Protocol version 2, enabled ML DSA signature

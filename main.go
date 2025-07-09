@@ -21,9 +21,6 @@ func main() {
 	viper.SetEnvPrefix("VEILNET")
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// Bind the 'public' key to the 'PUBLIC' environment variable (no prefix)
-	viper.BindEnv("public", "PUBLIC")
-
 	// Set defaults
 	viper.SetDefault("guardian_url", "https://guardian.veilnet.org")
 	viper.SetDefault("public", true)
