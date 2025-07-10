@@ -89,13 +89,7 @@ docker run -d \
 #### Option B: Native Installation
 
 1. **Download the binary**:
-```bash
-# For x86_64 Linux
-wget https://github.com/VeilNet-PTY-LTD/veilnet-portal/releases/download/v1.0.0/veilnet-portal
-
-# For ARM64 Linux
-wget https://github.com/VeilNet-PTY-LTD/veilnet-portal/releases/download/v1.0.0/veilnet-portal-arm64
-```
+Please download the binary from github repository releases.
 
 2. **Make it executable**:
 ```bash
