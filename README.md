@@ -314,3 +314,6 @@ This project is licensed under the CC-BY-NC-ND-4.0 License.
 
 ### v1.0.2
 - Upgrade to Anchor Protocol version 2, enabled ML DSA signature
+
+### v1.0.3
+- Implemented TOFU in control plane
